@@ -33,20 +33,45 @@ class HTTPResponse(object):
         self.body = body
 
 class HTTPClient(object):
-    #def get_host_port(self,url):
+    
+    def get_host_port(self,url):
+        if (url.find(':') != -1):
+            host, port = url.split(':')
+            port = int(port)
+        else:
+            host, port = url, 80
+        return host, port
+
+
 
     def connect(self, host, port):
         # use sockets!
-        return None
+        
+        clientSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        clientSocket.connect((host,port))
 
     def get_code(self, data):
-        return None
 
-    def get_headers(self,data):
-        return None
+        try:
+            data_code = int(data.split(" ")[1])
+        except:
+            data_code = 404
+        
+        return data_code
+
+
+
+#    def get_headers(self,data):
+#         return None
+    
 
     def get_body(self, data):
-        return None
+        body_info = data.split("\r\n\r\n")
+        if len(body_info) > 1:
+            return body_info[1]
+        else:
+            return data
+
 
     # read everything from the socket
     def recvall(self, sock):
@@ -63,11 +88,84 @@ class HTTPClient(object):
     def GET(self, url, args=None):
         code = 500
         body = ""
+        try:
+        
+            file = url.split('/',1)[1]
+        except:
+            file = "/"
+        
+        encode = urllib.urlencode(args)
+        
+        if (args != None):
+            
+            send_all = "Content-type:application/x-www-form-urlencoded\r\n"
+            send_all += "Content-Length: %d\r\n\r\n" %(len(encode))
+            send_all += "%\r\n" %(encode)
+            send_all += "\r\n"
+        else:
+            send_all = "Content-type:application/x-www-form-urlencoded\r\n"
+            send_all += "Content-Length: 0\r\n\r\n")
+            send_all += "\r\n"
+            send_all += "\r\n"
+        
+        
+        host,port = self.get_host_port(url)
+        conn = self.connect(host,port)
+        
+        conn.sendall("GET " + file + " HTTP/1.1\r\n")
+        conn.sendall("Host: " + host + "\r\n")
+        conn.sendall("Connection: close\r\n\r\n")
+        conn.sendall("Accept: */*\r\n")
+        conn.sendall(send_all)
+        
+        retutn_val = self.recvall(conn)
+        code = self.get_code(retutn_val)
+        body = self.get_body(retutn_val)
+        print body
+        
+        conn.close()
         return HTTPResponse(code, body)
 
     def POST(self, url, args=None):
         code = 500
         body = ""
+        try:
+            
+            file = url.split('/',1)[1]
+        except:
+            file = "/"
+        
+        encode = urllib.urlencode(args)
+        
+        if (args != None):
+            
+            send_all = "Content-type:application/x-www-form-urlencoded\r\n"
+            send_all += "Content-Length: %d\r\n\r\n" %(len(encode))
+            send_all += "%\r\n" %(encode)
+            send_all += "\r\n"
+        else:
+            send_all = "Content-type:application/x-www-form-urlencoded\r\n"
+            send_all += "Content-Length: 0\r\n\r\n")
+            send_all += "\r\n"
+            send_all += "\r\n"
+        
+        
+        host,port = self.get_host_port(url)
+        conn = self.connect(host,port)
+        
+        conn.sendall("POST " + file + " HTTP/1.1\r\n")
+        conn.sendall("Host: " + host + "\r\n")
+        conn.sendall("Connection: close\r\n\r\n")
+        conn.sendall("Accept: */*\r\n")
+        conn.sendall(send_all)
+        
+        retutn_val = self.recvall(conn)
+        code = self.get_code(retutn_val)
+        body = self.get_body(retutn_val)
+        print body
+        
+        conn.close()
+
         return HTTPResponse(code, body)
 
     def command(self, url, command="GET", args=None):
