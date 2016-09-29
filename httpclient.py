@@ -46,8 +46,6 @@ class HTTPClient(object):
             path_parts = pars[3:]
             
             path += "/".join(path_parts)
-        print ("path is: ")
-        print (path)
     
         if (host.find(':') != -1):
             host, port = host.split(':')
@@ -121,7 +119,6 @@ class HTTPClient(object):
         
         
         host,port,file = self.get_host_port(url)
-        print ("FILE is: " +file)
         conn = self.connect(host,port)
         
         conn.sendall("GET " + file + " HTTP/1.1\r\n")
@@ -129,13 +126,13 @@ class HTTPClient(object):
         conn.sendall("Connection: close\r\n\r\n")
         conn.sendall("Accept: */*\r\n")
 
-        print send_all
-
         conn.sendall(send_all)
         
         retutn_val = self.recvall(conn)
         code = self.get_code(retutn_val)
         body = self.get_body(retutn_val)
+        
+        print code
         print body
         
         conn.close()
@@ -162,9 +159,6 @@ class HTTPClient(object):
         
         host,port,file= self.get_host_port(url)
         conn = self.connect(host,port)
-        print host
-        print port
-        print send_all
 
         conn.sendall("POST " + file + " HTTP/1.1\r\n")
         conn.sendall("Host: " + host + "\r\n")
@@ -173,6 +167,8 @@ class HTTPClient(object):
         retutn_val = self.recvall(conn)
         code = self.get_code(retutn_val)
         body = self.get_body(retutn_val)
+        
+        print code
         print body
         
         conn.close()
